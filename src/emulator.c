@@ -13,17 +13,40 @@ static uint64_t PERIOD;
 static uint16_t TURBO_SKIP;
 
 void init_emulator(struct Emulator* emulator, int argc, char *argv[]){
+    char* rom_path = NULL;
+    char* genie = NULL;
+    char auto_rom_path[512] = {0};
+    
     if(argc < 2) {
-        LOG(ERROR, "Input file not provided");
-        quit(EXIT_FAILURE);
+        // Try to auto-load game.nes from executable directory
+        const char* base_path = SDL_GetBasePath();
+        if(base_path) {
+            snprintf(auto_rom_path, sizeof(auto_rom_path), "%sgame.nes", base_path);
+            SDL_free((void*)base_path);
+            
+            // Check if file exists
+            SDL_IOStream* test_file = SDL_IOFromFile(auto_rom_path, "rb");
+            if(test_file) {
+                SDL_CloseIO(test_file);
+                rom_path = auto_rom_path;
+                LOG(INFO, "Auto-loading: %s", rom_path);
+            } else {
+                LOG(ERROR, "Input file not provided and game.nes not found in executable directory");
+                quit(EXIT_FAILURE);
+            }
+        } else {
+            LOG(ERROR, "Input file not provided");
+            quit(EXIT_FAILURE);
+        }
+    } else {
+        rom_path = argv[1];
     }
 
-    char* genie = NULL;
     if(argc == 3 || argc == 6)
         genie = argv[argc - 1];
 
     memset(emulator, 0, sizeof(Emulator));
-    load_file(argv[1], genie, &emulator->mapper);
+    load_file(rom_path, genie, &emulator->mapper);
     emulator->type = emulator->mapper.type;
     emulator->mapper.emulator = emulator;
     if(emulator->type == PAL) {
@@ -69,7 +92,7 @@ void init_emulator(struct Emulator* emulator, int argc, char *argv[]){
     LOG(DEBUG, "RENDERING IN NAMETABLE MODE");
 #endif
     get_graphics_context(g_ctx);
-    SDL_SetWindowTitle(g_ctx->window, get_file_name(argv[1]));
+    SDL_SetWindowTitle(g_ctx->window, get_file_name(rom_path));
 
     init_mem(emulator);
     init_ppu(emulator);

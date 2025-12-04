@@ -59,6 +59,9 @@ static void select_mapper(Mapper* mapper){
         case COLORDREAMS46:
             load_colordreams46(mapper);
             break;
+        case UNROM512:
+            load_Mapper30(mapper);
+            break;
         default:
             LOG(ERROR, "Mapper no %u not implemented", mapper->mapper_num);
             quit(EXIT_FAILURE);

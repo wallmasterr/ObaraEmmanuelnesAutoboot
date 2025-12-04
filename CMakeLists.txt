@@ -51,6 +51,7 @@ set (SRC
         src/mappers/cnrom.c
         src/mappers/gnrom.c
         src/mappers/mapper.c
+        src/mappers/mapper30.c
         src/mappers/mmc1.c
         src/mappers/uxrom.c
         src/mappers/mmc3.c
